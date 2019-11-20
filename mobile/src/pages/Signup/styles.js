@@ -6,19 +6,14 @@ export const styles = StyleSheet.create({
         backgroundColor:'#fff',
         padding: 20,
     },
-    buttonError: {
-        alignSelf: 'center',
-        fontWeight: 'bold',
-        marginTop:10,
-    },
-    boxHeader:{
-       fontSize: 24,
-       fontWeight: 'bold',
-    },
-    boxDesc: {
-        marginVertical: 10
+    form: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        textAlignVertical: 'center',
+        alignItems: 'center'
     },
     input: {
+        width:150,
         height:46,
         alignSelf: 'stretch',
         borderRadius: 4,
@@ -40,6 +35,12 @@ export const styles = StyleSheet.create({
         color: '#FFF',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    buttonError: {
+        marginTop: 15,
+        color:'#999',
+        fontWeight: 'bold',
+        fontSize: 16
     },
   });
   

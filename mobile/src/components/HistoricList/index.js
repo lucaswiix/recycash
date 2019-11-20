@@ -34,7 +34,7 @@ export default function HistoricList({data, limit = 30}) {
                     {item.date}
                   </Text>
                   <Text>
-                    {item.size}
+                    {item.size}Kg
                   </Text>
                   <Text>
                     {item.price}      
@@ -42,6 +42,9 @@ export default function HistoricList({data, limit = 30}) {
                 </View>
               )}
               keyExtractor={item => item.id.toString()}
+              ListEmptyComponent={() => (
+                <Text style={{alignSelf:'center', marginVertical: 10, fontWeight:'bold'}}>Nenhuma venda encontrada.</Text>
+              )}
             />
             </View>
       </View>

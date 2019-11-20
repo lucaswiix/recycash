@@ -1,11 +1,15 @@
 import React, {useEffect} from 'react';
-import { View, Text } from 'react-native';
+import { AsyncStorage,View, Text } from 'react-native';
 
 // import { Container } from './styles';
 
 export default function Settings({navigation}) {
+    async function logoutUser(){
+        await AsyncStorage.removeItem('user');
+    }
     useEffect(() => {
         function handleLogout(){
+            logoutUser()
             setTimeout(() => {
                 navigation.navigate('Login')
             }, 2000);

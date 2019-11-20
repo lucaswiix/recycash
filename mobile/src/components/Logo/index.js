@@ -7,7 +7,7 @@ export default function Logo() {
     return (
         <View style={styles.box}>
             <Text style={styles.title}>
-            💵 Recycash 💵
+            Recycash
             </Text>
         </View>
     );

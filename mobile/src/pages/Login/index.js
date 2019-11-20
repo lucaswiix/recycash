@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Linking, AsyncStorage, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Keyboard, Linking, AsyncStorage, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity } from 'react-native';
+
+import { useDispatch, useSelector } from 'react-redux';
+import * as userActions from '../../actions/user';
 
 import { styles } from './styles';
 import Logo from '../../components/Logo';
@@ -9,14 +12,38 @@ export default function Login({ navigation }) {
   const [email, setEmail ] = useState('');
   const [password, setPassword ] = useState('');
   const [error, setError ] = useState('');
-
+  const users = useSelector(state => state.user.data);
+  const dispatch = useDispatch();
+  
   loadInBrowser = () => {
     Linking.openURL('http://10.0.40.25/').catch(err => console.error("Couldn't load page", err));
   };
 
-  async function handleLogin(){
-    navigation.navigate('Main');
+  async function hasUser(){
+    let userStorage = await AsyncStorage.getItem('user');
+    if(userStorage) navigation.navigate('Main');    
   }
+  useEffect(()=>{
+    hasUser()
+  }, []);
+  
+  async function handleLogin(){
+    let user = users.find(user => user.email == email && user.password == password);
+    if(!user){
+      setEmail('')
+      setPassword('')
+      setError('Email ou senha invalidos.');
+      Keyboard.dismiss();
+      return;
+    }
+    try {
+      user.history = [];
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      navigation.navigate('Main');
+    } catch (error) {
+        setError('Aconteceu algum erro.');
+    }
+    }
 
   return (
     <DismissKeyboard>
@@ -49,10 +76,10 @@ export default function Login({ navigation }) {
     onChangeText={setPassword}
      />
 
-    <TouchableOpacity onPress={handleLogin} style={styles.button}>
+    <TouchableOpacity disabled={email.length < 7 || password.length < 6} onPress={handleLogin} style={styles.button}>
         <Text style={styles.buttonText}>Entrar</Text>
     </TouchableOpacity>
-    <Text style={styles.createAccountText}>Não tem conta? <Text style={styles.createAccountLink} onPress={loadInBrowser}>Criar agora!</Text></Text>
+    <Text style={styles.createAccountText}>Não tem conta? <Text style={styles.createAccountLink} onPress={()=> navigation.navigate('Signup')}>Criar agora!</Text></Text>
     <Text style={styles.buttonError}>{error}</Text>
 </KeyboardAvoidingView>
 </DismissKeyboard>

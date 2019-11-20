@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StatusBar, AsyncStorage ,View, Text, FlatList } from 'react-native';
 import { styles } from './styles';
 import Achievement from '../../components/Achievements';
 import HistoricList from '../../components/HistoricList';
-export default function Dashboard() {
+export default function Dashboard({ navigation }) {
   const fakeData = {
     achivements: [
       {
         id: 1,
         title: '50KG Reciclados',
-        isDone: true
+        isDone: false
       },
       {
         id: 2,
         title: 'Amigo da natureza',
-        isDone: true
+        isDone: false
       },
       {
         id: 3,
@@ -28,7 +27,7 @@ export default function Dashboard() {
         isDone: false
       }
     ],
-    historic: [
+    history: [
       {
         id: 0,
         date: '18/10',
@@ -50,19 +49,30 @@ export default function Dashboard() {
     ]
   }
 
-  const [balance, setBalance] = useState('104,50');
-  const [historic, setHistoric] = useState(fakeData.historic);
+  async function getUser(){
+    let userStore = await AsyncStorage.getItem('user');
+    if(!userStore){
+      navigation.navigate('Login');
+    }
+    setUser(JSON.parse(userStore));
+  }
 
-  const [achievements, setAchievements] = useState(fakeData.achivements);
+  useEffect(() => {
+    getUser();
+  });
+  
+  const [user, setUser] = useState([]);
+
   return (
     <View style={styles.container} >
+      <StatusBar backgroundColor="white" barStyle="light-content" />
 
       <View style={styles.boxing}>
         <Text style={styles.boxHeaderBalance}>
           Saldo
         </Text>
         <Text style={styles.boxDescBalance}>
-          R$ {balance ? balance : 0}
+          R$ {user.balance ? parseFloat(user.balance).toFixed(2) : 0}
         </Text>
       </View>
 
@@ -75,7 +85,7 @@ export default function Dashboard() {
           style={{
             marginTop: 10
           }}
-          data={achievements}
+          data={user.achievements}
           renderItem={({ item, index, separators }) => <Achievement
             title={item.title}
             isDone={item.isDone} />
@@ -88,7 +98,7 @@ export default function Dashboard() {
         <Text style={styles.boxHeader}>
           Historico:
         </Text>
-        <HistoricList data={historic} limit={5}/>
+        <HistoricList data={user.history} limit={5}/>
       </View>
     </View>
   );
