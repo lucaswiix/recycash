@@ -1,11 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import { AsyncStorage, ScrollView, View, Text } from 'react-native';
+import React from 'react';
 
-
-import {  createAppContainer, createSwitchNavigator } from 'react-navigation';
-import { DrawerItems, createDrawerNavigator } from 'react-navigation-drawer';
+import { createAppContainer, createSwitchNavigator } from 'react-navigation';
+import { createDrawerNavigator } from 'react-navigation-drawer';
 import { createStackNavigator } from 'react-navigation-stack';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { CustomDrawerComponent } from '../components/CustomDrawerComponent';
 
 /* [Pages] */
 import Login from '../pages/Login';
@@ -27,36 +26,9 @@ const SettingsNavigator = createSwitchNavigator({
     Settings
 });
 
-const CustomDrawerComponent = (props) => {
-    const [user, setUser] = useState('');
-
-    async function getName(){
-        let userAll = await AsyncStorage.getItem('user');
-        setUser(JSON.parse(userAll).name);
-    }
-
-    useEffect(()=>{
-        getName()
-    }, [])
-    return (
-    <ScrollView>
-        <View style={{
-            flex:1, 
-            height: 60, 
-            borderColor: '#000',
-            borderBottomWidth: 1,
-            }}>
-
-        <Text style={{
-            padding: 20, 
-            fontWeight: 'bold', 
-            fontSize: 20,
-            }}>{user && user}</Text>
-        </View>
-        <DrawerItems {...props} />
-      </ScrollView>
-    );
-}
+const RecyclageNavigator = createSwitchNavigator({
+    Recycle
+});
 
 const Drawer = createDrawerNavigator({
     Resumo: DashboardNavigator,
@@ -73,11 +45,7 @@ const Drawer = createDrawerNavigator({
     },
 });
 
-const RecyclageNavigator = createStackNavigator({
-    Recyclage: Recycle
-},{
-    headerMode: 'none'
-});
+
 
 
 const SignupNavigator = createStackNavigator({
@@ -114,7 +82,7 @@ const Main = createStackNavigator({
                 fontSize: 24,
                 fontWeight: '300',
             },
-            headerRight: () => <FontAwesome5 name="recycle" size={24} onPress={() => navigation.navigate('newRecycling')} color="white" style={{
+            headerRight: () => <FontAwesome5 name="recycle" size={24} onPress={() => navigation.navigate('Recycle')} color="white" style={{
                 padding:10
               }} />,
             headerLeft: () => <FontAwesome5 name="bars" size={24} onPress={() => navigation.toggleDrawer()} color="white" style={{
@@ -122,9 +90,7 @@ const Main = createStackNavigator({
             }} />
         }),        
     },
-    newRecycling:{
-        screen: RecyclageNavigator,
-    }
+    Recycle
 },{
     initialRouteName: 'Default',
     cardStyle:{

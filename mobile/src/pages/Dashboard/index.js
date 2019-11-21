@@ -1,82 +1,61 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StatusBar, AsyncStorage ,View, Text, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StatusBar, AsyncStorage ,View, Text } from 'react-native';
+import { NavigationEvents } from 'react-navigation';
 import { styles } from './styles';
 import Achievement from '../../components/Achievements';
 import HistoricList from '../../components/HistoricList';
+import config from '../../config';
+import axios from 'axios';
+import Balance from '../../components/Balance';
 export default function Dashboard({ navigation }) {
-  const fakeData = {
-    achivements: [
-      {
-        id: 1,
-        title: '50KG Reciclados',
-        isDone: false
-      },
-      {
-        id: 2,
-        title: 'Amigo da natureza',
-        isDone: false
-      },
-      {
-        id: 3,
-        title: 'Novo usuario',
-        isDone: false
-      },
-      {
-        id: 4,
-        title: 'Bom reciclador',
-        isDone: false
-      }
-    ],
-    history: [
-      {
-        id: 0,
-        date: '18/10',
-        size: '24kg',
-        price: 'R$ 4.90'
-      },
-      {
-        id: 1,
-        date: '19/10',
-        size: '16kg',
-        price: 'R$ 2.60'
-      },
-      {
-        id: 2,
-        date: '20/10',
-        size: '29kg',
-        price: 'R$ 7.90'
-      }
-    ]
-  }
+  const [token, setToken] = useState('');
+  const [user, setUser] = useState({});
 
-  async function getUser(){
-    let userStore = await AsyncStorage.getItem('user');
-    if(!userStore){
-      navigation.navigate('Login');
+  async function getUser(paramToken = token){
+    try {
+      let response = await axios.get(`${config.API}/user`, { headers:{
+
+        "Authorization":" Bearer "+paramToken
+      }
+      });
+      setUser(response.data);      
+    } catch (error) {
+      if(error.response && error.response.status == 401){
+        await AsyncStorage.clear();
+        navigation.navigate('Login');
+      }
     }
-    setUser(JSON.parse(userStore));
+  }
+ 
+  async function verifyToken(){
+    let $token = await AsyncStorage.getItem('token');
+    if(!$token){
+      await AsyncStorage.clear();
+      navigation.navigate('Login');
+      return;
+    }
+    setToken($token);
+    getUser($token)
   }
 
   useEffect(() => {
-    getUser();
-  });
+    verifyToken();
+  }, []);
   
-  const [user, setUser] = useState([]);
+
 
   return (
     <View style={styles.container} >
       <StatusBar backgroundColor="white" barStyle="light-content" />
+      
+      { token.length > 0 && 
+      <NavigationEvents
+      onWillFocus={payload => getUser()}
+      />
+      }
+      {user && <Balance data={user}/> }
 
-      <View style={styles.boxing}>
-        <Text style={styles.boxHeaderBalance}>
-          Saldo
-        </Text>
-        <Text style={styles.boxDescBalance}>
-          R$ {user.balance ? parseFloat(user.balance).toFixed(2) : 0}
-        </Text>
-      </View>
-
-      <View style={styles.boxing}>
+      {/* <View style={styles.boxing}>
         <Text style={styles.boxHeader}>
           Ranking
         </Text>
@@ -92,13 +71,16 @@ export default function Dashboard({ navigation }) {
           }
           keyExtractor={item => item.id.toString()}
         />
-      </View>
+      </View> */}
 
       <View style={styles.boxing}>
         <Text style={styles.boxHeader}>
           Historico:
         </Text>
-        <HistoricList data={user.history} limit={5}/>
+        { token.length > 0 && (
+          <HistoricList token={token} limit={5}/>
+        )
+        }
       </View>
     </View>
   );

@@ -7,9 +7,10 @@ import * as userActions from '../../actions/user';
 import { styles } from './styles';
 import Logo from '../../components/Logo';
 import { DismissKeyboard } from '../../components/DismissKeyboard';
-
+import config from '../../config';
+import axios from 'axios';
 export default function Login({ navigation }) {
-  const [email, setEmail ] = useState('');
+  const [username, setUsername ] = useState('');
   const [password, setPassword ] = useState('');
   const [error, setError ] = useState('');
   const users = useSelector(state => state.user.data);
@@ -20,27 +21,34 @@ export default function Login({ navigation }) {
   };
 
   async function hasUser(){
-    let userStorage = await AsyncStorage.getItem('user');
-    if(userStorage) navigation.navigate('Main');    
+    let userStorage = await AsyncStorage.getItem('token');
+    let username = await AsyncStorage.getItem('username');
+    if(!userStorage || !username){      
+      AsyncStorage.clear();
+      return;
+    } 
+    navigation.navigate('Main');
   }
+
   useEffect(()=>{
     hasUser()
   }, []);
   
   async function handleLogin(){
-    let user = users.find(user => user.email == email && user.password == password);
-    if(!user){
-      setEmail('')
-      setPassword('')
-      setError('Email ou senha invalidos.');
-      Keyboard.dismiss();
-      return;
-    }
+    let url;
     try {
-      user.history = [];
-      await AsyncStorage.setItem('user', JSON.stringify(user));
+      const data = {
+        username,
+        password
+      }
+      url = `${config.API}/auth/login`;
+      const response = await axios.post(url, data);
+      await AsyncStorage.setItem('token', response.data.token);
+      await AsyncStorage.setItem('username', username);
       navigation.navigate('Main');
     } catch (error) {
+      console.log('uri', url);
+      console.log(error);
         setError('Aconteceu algum erro.');
     }
     }
@@ -61,8 +69,8 @@ export default function Login({ navigation }) {
     placeholder="Digite seu e-mail" 
     placeholderTextColor="#999"
     style={styles.input}
-    value={email}
-    onChangeText={setEmail}
+    value={username}
+    onChangeText={setUsername}
      />
 
      <TextInput 
@@ -76,7 +84,7 @@ export default function Login({ navigation }) {
     onChangeText={setPassword}
      />
 
-    <TouchableOpacity disabled={email.length < 7 || password.length < 6} onPress={handleLogin} style={styles.button}>
+    <TouchableOpacity disabled={username.length < 4 || password.length < 8} onPress={handleLogin} style={styles.button}>
         <Text style={styles.buttonText}>Entrar</Text>
     </TouchableOpacity>
     <Text style={styles.createAccountText}>Não tem conta? <Text style={styles.createAccountLink} onPress={()=> navigation.navigate('Signup')}>Criar agora!</Text></Text>

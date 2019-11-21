@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Alert, ScrollView, TouchableOpacity, View, TextInput, Text } from 'react-native';
+import { AsyncStorage, Alert, ScrollView, TouchableOpacity, View, TextInput, Text } from 'react-native';
 
 import { styles } from './styles';
 
@@ -7,6 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import * as userActions from '../../actions/user';
 import uuid from 'uuid/v4';
+
+import config from '../../config';
+import axios from 'axios';
 
 export default function Signup({navigation}) {
     const [name, setName] = useState('');
@@ -20,38 +23,26 @@ export default function Signup({navigation}) {
     const [agencia, setAgencia] = useState('');
     const [error, setError] = useState('');
 
-    const users = useSelector(state => state.user.data);
-    const dispatch = useDispatch();
-
     async function handleSignup(){
         setError('');
         if(
-            name.length > 3 &&
+            username.length > 4 &&
             email.length > 6 &&
-            pass.length > 5 &&
-            pass == cpass &&
-            bank.length > 3 &&
-            acc.length > 4 &&
-            agencia.length > 3
+            pass.length > 7 &&
+            pass == cpass
             ){
 
                 try {
-                    dispatch(userActions.addUserAction(
-                        {
-                            id: uuid(),
-                            name: name,
-                            email: email,
-                            password: pass,
-                            balance: 0,
-                            bank: {
-                                name: bank,
-                                account: acc,
-                                agency: agencia
-                            },
-        
-                        }
-                    ));
+                    const data = {
+                        username,
+                        email,
+                        password:pass
+                    }
+                    const response = await axios.post(`${config.API}/auth/register`, data);
+                    await AsyncStorage.setItem('token', response.data.token);
+                    await AsyncStorage.setItem('username', username);
                     Alert.alert('Cadastro realizado com sucesso!');
+
                     navigation.navigate('Login');
         
                 } catch (error) {
@@ -67,7 +58,7 @@ export default function Signup({navigation}) {
     <ScrollView style={styles.box}>
         <Text>{error && error}</Text>
         <View style={styles.form}>
-            <Text>Nome:</Text>
+            <Text>Username:</Text>
             <TextInput 
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -118,42 +109,7 @@ export default function Signup({navigation}) {
                 onChangeText={setCpass}
             />
         </View>
-
-        <View style={styles.form}>
-            <Text>Banco:</Text>
-            <TextInput 
-                autoCapitalize="none"
-                autoCorrect={false}
-                placeholder="Caixa" 
-                placeholderTextColor="#999"
-                style={styles.input}
-                value={bank}
-                onChangeText={setBank}
-            />
-        </View>
-        <View style={styles.form}>
-            <Text>Conta:</Text>
-            <TextInput 
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType={'numeric'}
-                placeholderTextColor="#999"
-                style={styles.input}
-                value={acc}
-                onChangeText={setAcc}
-            />
-        </View>
-        <View style={styles.form}>
-            <Text>Agencia:</Text>
-            <TextInput 
-                autoCapitalize="none"
-                autoCorrect={false}
-                placeholderTextColor="#999"
-                style={styles.input}
-                value={agencia}
-                onChangeText={setAgencia}
-            />
-        </View>
+      
         <TouchableOpacity onPress={handleSignup} style={styles.button}>
         <Text style={styles.buttonText}>Cadastrar</Text>
     </TouchableOpacity>

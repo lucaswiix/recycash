@@ -5,7 +5,7 @@ import { AsyncStorage,View, Text } from 'react-native';
 
 export default function Settings({navigation}) {
     async function logoutUser(){
-        await AsyncStorage.removeItem('user');
+        await AsyncStorage.clear()
     }
     useEffect(() => {
         function handleLogout(){
