@@ -10,6 +10,9 @@ class UserSchema extends Schema {
       table.string('username', 80).notNullable().unique()
       table.string('email', 254).notNullable().unique()
       table.string('password', 60).notNullable()
+      table.boolean('isCompany').defaultTo(false)
+      table.boolean('isAdmin').defaultTo(false)
+      table.decimal('balance', 32, 19).notNullable().defaultTo(0)     
       table.timestamps()
     })
   }
